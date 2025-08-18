@@ -1,0 +1,31 @@
+[package]
+name = "dotpoap"
+version = "1.0.0"
+authors = ["DotPOAP Team <team@dotpoap.io>"]
+edition = "2021"
+publish = false
+description = "A Polkadot-native Proof-of-Attendance Protocol (POAP) smart contract"
+license = "MIT"
+repository = "https://github.com/onlydust-Open-Source/DotPOAP"
+
+[dependencies]
+ink = { version = "6.0.0-alpha", default-features = false, features = ["unstable-hostfn"] }
+
+[dev-dependencies]
+ink_e2e = { version = "6.0.0-alpha", default-features = false, features = ["sandbox"] }
+hex = { version = "0.4.3" }
+
+[lib]
+path = "lib.rs"
+
+[features]
+default = ["std"]
+std = [
+    "ink/std",
+]
+ink-as-dependency = []
+e2e-tests = []
+
+# Optional: Enable Solidity ABI compatibility for MetaMask integration
+[package.metadata.ink-lang]
+abi = "sol"
