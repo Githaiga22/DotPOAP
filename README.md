@@ -126,10 +126,11 @@ We welcome contributions!
 
 ## 📩 Contact  
 
-Led by **[Your Name]**, Community Lead at **Web3Way Africa** 🌍  
-- Twitter: [@yourhandle](#)  
-- LinkedIn: [Your Name](#)  
-- Email: your@email.com  
+
+Led by **Allan Robinson**, Community Lead at **Polkadot Kisumu** 🌍  
+- Twitter: [robinsoncodes](https://x.com/robinsoncodes)  
+- LinkedIn: [Allan Robinson](https://www.linkedin.com/in/allan-robinson-3b54511a4/)  
+- Email: allangithaiga5@gmail.com  
 
 ---
 
