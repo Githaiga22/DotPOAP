@@ -36,7 +36,7 @@ const HeroSection = () => {
                 </Link>
               </Button>
               <Button variant="outline" size="lg" asChild>
-                <Link to="/create">Create Event</Link>
+                <Link to="/events?tab=create">Create Event</Link>
               </Button>
               <Button variant="premium" size="lg" asChild>
                 <Link to="/my-poaps">My POAPs</Link>
@@ -101,7 +101,7 @@ const HeroSection = () => {
     </section>
 
     {/* Section 1: What is DotPoap? */}
-    <section className="py-20 bg-background">
+    <section id="what-is-dotpoap" className="py-20 bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -145,7 +145,7 @@ const HeroSection = () => {
     </section>
 
     {/* Section 2: How Does DotPoap Work? */}
-    <section className="py-20 bg-muted/30">
+    <section id="how-it-works" className="py-20 bg-muted/30">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
@@ -203,6 +203,84 @@ const HeroSection = () => {
             <p className="text-muted-foreground leading-relaxed">
               Make your memories live forever. After minting, DotPoaps unlock a variety of experiences — from joining exclusive community chats, to claiming rewards, to showcasing your Polkadot journey. Your DotPoaps keep the good times alive.
             </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* Section 3: Get Started */}
+    <section className="py-20 bg-background">
+      <div className="container mx-auto px-4">
+        <div className="text-center mb-16">
+          <h2 className="text-3xl md:text-4xl font-bold mb-4">
+            Ready to Get <span className="bg-gradient-primary bg-clip-text text-transparent">Started</span>?
+          </h2>
+          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+            Join the DotPOAP ecosystem today and start creating memorable experiences on Polkadot
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+          {/* For Event Organizers */}
+          <div className="text-center p-6 rounded-2xl bg-card border border-border shadow-elegant hover:shadow-glow transition-smooth group">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-smooth">
+              <Calendar className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">For Organizers</h3>
+            <p className="text-muted-foreground mb-6">
+              Create events and distribute POAPs to your community members
+            </p>
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/events?tab=create">Create Event</Link>
+            </Button>
+          </div>
+
+          {/* For Collectors */}
+          <div className="text-center p-6 rounded-2xl bg-card border border-border shadow-elegant hover:shadow-glow transition-smooth group">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-smooth">
+              <Award className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">For Collectors</h3>
+            <p className="text-muted-foreground mb-6">
+              Discover events and collect POAPs to showcase your journey
+            </p>
+            <Button variant="outline" className="w-full" asChild>
+              <Link to="/events">Browse Events</Link>
+            </Button>
+          </div>
+
+          {/* For Developers */}
+          <div className="text-center p-6 rounded-2xl bg-card border border-border shadow-elegant hover:shadow-glow transition-smooth group">
+            <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-primary flex items-center justify-center shadow-glow group-hover:scale-105 transition-smooth">
+              <Users className="h-8 w-8 text-primary-foreground" />
+            </div>
+            <h3 className="text-xl font-bold mb-3">Get Connected</h3>
+            <p className="text-muted-foreground mb-6">
+              Connect your wallet and start your DotPOAP journey today
+            </p>
+            <Button variant="hero" className="w-full" asChild>
+              <Link to="/events?tab=wallet">Connect Wallet</Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Quick Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mt-16 max-w-4xl mx-auto">
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary mb-2">100%</div>
+            <div className="text-sm text-muted-foreground">On-Chain</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary mb-2">⚡</div>
+            <div className="text-sm text-muted-foreground">Fast & Secure</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary mb-2">🔗</div>
+            <div className="text-sm text-muted-foreground">Polkadot Native</div>
+          </div>
+          <div className="text-center">
+            <div className="text-2xl md:text-3xl font-bold text-primary mb-2">🎨</div>
+            <div className="text-sm text-muted-foreground">Customizable</div>
           </div>
         </div>
       </div>
