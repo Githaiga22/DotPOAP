@@ -26,6 +26,4 @@ std = [
 ink-as-dependency = []
 e2e-tests = []
 
-# Optional: Enable Solidity ABI compatibility for MetaMask integration
-[package.metadata.ink-lang]
-abi = "sol"
+# Using standard Polkadot AccountId for native Polkadot integration
