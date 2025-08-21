@@ -11,6 +11,8 @@ import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import dotpoapLogo from "@/assets/dotpoap-logo.png";
 import ThemeToggle from "./ThemeToggle";
+import { WalletConnectButton } from "./WalletConnectButton";
+import { useAnchorNavigation } from "@/utils/smoothScroll";
 
 interface NavigationProps {
   className?: string;
@@ -18,6 +20,7 @@ interface NavigationProps {
 
 const Navigation = ({ className }: NavigationProps) => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { handleAnchorClick } = useAnchorNavigation();
 
   const NavDropdown = ({ title, items }: { title: string; items: Array<{ label: string; href: string }> }) => (
     <DropdownMenu>
@@ -30,9 +33,10 @@ const Navigation = ({ className }: NavigationProps) => {
       <DropdownMenuContent align="start" className="w-56 bg-card border border-border shadow-elegant">
         {items.map((item) => (
           <DropdownMenuItem key={item.href} asChild>
-            <Link 
-              to={item.href} 
+            <Link
+              to={item.href}
               className="w-full cursor-pointer text-foreground hover:text-primary hover:bg-accent transition-smooth"
+              onClick={(e) => handleAnchorClick(e, item.href)}
             >
               {item.label}
             </Link>
@@ -56,37 +60,30 @@ const Navigation = ({ className }: NavigationProps) => {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
+            <Link to="/events" className="text-foreground hover:text-primary transition-smooth font-medium">
+              Events
+            </Link>
+            <Link to="/my-poaps" className="text-foreground hover:text-primary transition-smooth font-medium">
+              My POAPs
+            </Link>
+            <Link to="/about" className="text-foreground hover:text-primary transition-smooth font-medium">
+              About
+            </Link>
             <NavDropdown
-              title="About"
+              title="Create"
               items={[
-                { label: "About DotPoap", href: "/about" },
-                { label: "About POAP Inc.", href: "/about-poap" },
-                { label: "Case Studies", href: "/case-studies" },
+                { label: "Create Event", href: "/events?tab=create" },
+                { label: "Connect Wallet", href: "/events?tab=wallet" },
+                { label: "Browse Events", href: "/events" },
               ]}
             />
             <NavDropdown
-              title="Issuers"
+              title="Learn"
               items={[
-                { label: "How to use DotPoap", href: "/how-to-use" },
-                { label: "Enterprise Solutions", href: "/enterprise" },
-                { label: "Packages & Pricing", href: "/pricing" },
-                { label: "DotPoap.fun", href: "/dotpoap-fun" },
-              ]}
-            />
-            <NavDropdown
-              title="Collectors"
-              items={[
-                { label: "Collectors", href: "/collectors" },
-                { label: "Gallery", href: "/gallery" },
-                { label: "Collections", href: "/collections" },
-                { label: "DotPoap.fun", href: "/dotpoap-fun" },
-              ]}
-            />
-            <NavDropdown
-              title="Builders"
-              items={[
-                { label: "Build with DotPoap", href: "/build" },
-                { label: "Documentation", href: "/docs" },
+                { label: "How it Works", href: "/#how-it-works" },
+                { label: "What is DotPOAP", href: "/#what-is-dotpoap" },
+                { label: "Wallet Demo", href: "/wallet-demo" },
+                { label: "Documentation", href: "https://github.com/your-repo" },
               ]}
             />
           </div>
@@ -94,11 +91,9 @@ const Navigation = ({ className }: NavigationProps) => {
           {/* Desktop Action Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <ThemeToggle />
-            <Button variant="outline" asChild>
-              <Link to="/contact">Contact Sales</Link>
-            </Button>
+            <WalletConnectButton variant="outline" />
             <Button variant="hero" asChild>
-              <Link to="/create">Make a POAP</Link>
+              <Link to="/events?tab=create">Create Event</Link>
             </Button>
           </div>
 
@@ -117,28 +112,56 @@ const Navigation = ({ className }: NavigationProps) => {
         {isMobileMenuOpen && (
           <div className="md:hidden py-4 border-t border-border bg-card/50 backdrop-blur-sm">
             <div className="flex flex-col gap-4">
-              <Link to="/about" className="text-foreground hover:text-primary transition-smooth">
+              <Link
+                to="/events"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Events
+              </Link>
+              <Link
+                to="/my-poaps"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                My POAPs
+              </Link>
+              <Link
+                to="/events?tab=create"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Create Event
+              </Link>
+              <Link
+                to="/events?tab=wallet"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Connect Wallet
+              </Link>
+              <Link
+                to="/about"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
                 About
               </Link>
-              <Link to="/how-to-use" className="text-foreground hover:text-primary transition-smooth">
-                For Issuers
-              </Link>
-              <Link to="/collectors" className="text-foreground hover:text-primary transition-smooth">
-                For Collectors
-              </Link>
-              <Link to="/build" className="text-foreground hover:text-primary transition-smooth">
-                For Builders
+              <Link
+                to="/wallet-demo"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                Wallet Demo
               </Link>
               <div className="flex flex-col gap-2 pt-2 border-t border-border">
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">Theme</span>
                   <ThemeToggle />
                 </div>
-                <Button variant="outline" size="sm" asChild>
-                  <Link to="/contact">Contact Sales</Link>
-                </Button>
+                <WalletConnectButton variant="outline" size="sm" className="w-full" />
                 <Button variant="hero" size="sm" asChild>
-                  <Link to="/create">Make a POAP</Link>
+                  <Link to="/events?tab=create">Create Event</Link>
                 </Button>
               </div>
             </div>
