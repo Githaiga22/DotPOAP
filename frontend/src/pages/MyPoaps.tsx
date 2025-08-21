@@ -1,12 +1,15 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Wallet, Search, Filter, Award, Calendar, MapPin, ExternalLink } from "lucide-react";
+import { Wallet, Search, Filter, Award, Calendar, MapPin, ExternalLink, Loader2 } from "lucide-react";
 import Navigation from "@/components/Navigation";
 import Footer from "@/components/Footer";
+import { WalletConnection } from "@/components/WalletConnection";
+import { usePolkadot } from "@/contexts/PolkadotContext";
+import { useContract } from "@/hooks/useContract";
 
 // Mock POAP data
 const mockPoaps = [
@@ -63,16 +66,38 @@ const mockPoaps = [
 const MyPoaps = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("all");
-  const [roleFilter, setRoleFilter] = useState("all");
-  const [isConnected, setIsConnected] = useState(false);
 
-  const filteredPoaps = mockPoaps.filter(poap => {
+  const { isWalletConnected, selectedAccount } = usePolkadot();
+  const { userPoaps, isLoading, loadUserPoaps } = useContract();
+
+  // Load user POAPs when wallet is connected
+  useEffect(() => {
+    if (isWalletConnected && selectedAccount) {
+      loadUserPoaps();
+    }
+  }, [isWalletConnected, selectedAccount, loadUserPoaps]);
+
+  // Convert contract POAPs to display format
+  const displayPoaps = userPoaps.map(poap => ({
+    id: poap.id,
+    eventTitle: `Event #${poap.eventId}`,
+    eventDate: new Date(poap.mintedAt * 1000).toISOString().split('T')[0],
+    eventLocation: "Polkadot Network",
+    category: "Event",
+    role: "Participant",
+    mintDate: new Date(poap.mintedAt * 1000).toISOString().split('T')[0],
+    tokenId: `#${poap.id}`,
+    image: poap.tokenUri.startsWith('http') ? poap.tokenUri : "https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=300&h=300&fit=crop",
+    utilities: ["DotPOAP Holder"],
+    contractPoap: poap
+  }));
+
+  const filteredPoaps = displayPoaps.filter(poap => {
     const matchesSearch = poap.eventTitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
                          poap.eventLocation.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = categoryFilter === "all" || poap.category.toLowerCase() === categoryFilter;
-    const matchesRole = roleFilter === "all" || poap.role.toLowerCase() === roleFilter;
-    
-    return matchesSearch && matchesCategory && matchesRole;
+
+    return matchesSearch && matchesCategory;
   });
 
   const getRoleColor = (role: string) => {
@@ -85,38 +110,23 @@ const MyPoaps = () => {
     }
   };
 
-  const ConnectWallet = () => (
-    <div className="text-center py-20">
-      <div className="max-w-md mx-auto space-y-6">
-        <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-          <Wallet className="h-10 w-10 text-primary" />
-        </div>
-        <h2 className="text-2xl font-bold">Connect Your Wallet</h2>
-        <p className="text-muted-foreground">
-          Connect your Polkadot wallet to view your DotPoap collection
-        </p>
-        <div className="space-y-3">
-          <Button 
-            variant="hero" 
-            className="w-full"
-            onClick={() => setIsConnected(true)}
-          >
-            Connect Polkadot.js
-          </Button>
-          <Button variant="outline" className="w-full">
-            Connect Talisman
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-
-  if (!isConnected) {
+  if (!isWalletConnected) {
     return (
       <div className="min-h-screen bg-background">
         <Navigation />
         <main className="container mx-auto px-4 py-12">
-          <ConnectWallet />
+          <div className="text-center py-20">
+            <div className="max-w-md mx-auto space-y-6">
+              <div className="w-20 h-20 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
+                <Wallet className="h-10 w-10 text-primary" />
+              </div>
+              <h2 className="text-2xl font-bold">Connect Your Wallet</h2>
+              <p className="text-muted-foreground">
+                Connect your Polkadot wallet to view your DotPOAP collection
+              </p>
+              <WalletConnection />
+            </div>
+          </div>
         </main>
         <Footer />
       </div>
@@ -141,7 +151,7 @@ const MyPoaps = () => {
           <div className="flex items-center justify-center gap-2 mt-4">
             <Badge variant="secondary" className="text-lg px-4 py-2">
               <Award className="h-4 w-4 mr-2" />
-              {mockPoaps.length} DotPoaps Collected
+              {userPoaps.length} DotPOAPs Collected
             </Badge>
           </div>
         </div>
@@ -173,24 +183,33 @@ const MyPoaps = () => {
               </SelectContent>
             </Select>
 
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Role" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Roles</SelectItem>
-                <SelectItem value="attendee">Attendee</SelectItem>
-                <SelectItem value="speaker">Speaker</SelectItem>
-                <SelectItem value="participant">Participant</SelectItem>
-                <SelectItem value="winner">Winner</SelectItem>
-              </SelectContent>
-            </Select>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => loadUserPoaps()}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                "Refresh"
+              )}
+            </Button>
           </div>
         </div>
 
+        {/* Loading State */}
+        {isLoading && (
+          <div className="text-center py-12">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading your POAPs...</p>
+          </div>
+        )}
+
         {/* POAPs Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPoaps.map((poap) => (
+        {!isLoading && (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredPoaps.map((poap) => (
             <Card key={poap.id} className="overflow-hidden group hover:shadow-elegant transition-smooth">
               <div className="relative overflow-hidden">
                 <img 
@@ -246,13 +265,17 @@ const MyPoaps = () => {
                   <ExternalLink className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </CardContent>
-            </Card>
-          ))}
-        </div>
+              </Card>
+            ))}
+          </div>
+        )}
 
-        {filteredPoaps.length === 0 && (
+        {/* Empty State */}
+        {!isLoading && filteredPoaps.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-muted-foreground">No POAPs found matching your criteria.</p>
+            <p className="text-muted-foreground">
+              {userPoaps.length === 0 ? "No POAPs found. Attend events to start collecting!" : "No POAPs found matching your criteria."}
+            </p>
           </div>
         )}
       </main>
