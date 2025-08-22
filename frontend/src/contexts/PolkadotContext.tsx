@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
 import { ApiPromise, WsProvider } from '@polkadot/api';
-import { web3Accounts, web3Enable } from '@polkadot/extension-dapp';
-import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
+import { web3Accounts, web3Enable, web3AccountsSubscribe, web3FromSource } from '@polkadot/extension-dapp';
+import { InjectedAccountWithMeta, InjectedExtension } from '@polkadot/extension-inject/types';
 import { ContractPromise } from '@polkadot/api-contract';
 import { POLKADOT_CONFIG } from '@/config/polkadot';
 
@@ -53,6 +53,8 @@ export interface PolkadotContextType {
   selectedAccount: InjectedAccountWithMeta | null;
   isWalletConnected: boolean;
   walletError: string | null;
+  extensions: InjectedExtension[] | null;
+  injector: InjectedExtension | null;
 
   // Contract
   contract: ContractPromise | null;
@@ -91,6 +93,8 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
   const [selectedAccount, setSelectedAccount] = useState<InjectedAccountWithMeta | null>(null);
   const [isWalletConnected, setIsWalletConnected] = useState(false);
   const [walletError, setWalletError] = useState<string | null>(null);
+  const [extensions, setExtensions] = useState<InjectedExtension[] | null>(null);
+  const [injector, setInjector] = useState<InjectedExtension | null>(null);
 
   // Contract state
   const [contract, setContract] = useState<ContractPromise | null>(null);
@@ -331,6 +335,66 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
     }
   };
 
+  // Setup wallet extension with proper subscription pattern (from tutorial)
+  const setupWalletExtension = async () => {
+    try {
+      logger.info('🔧 Setting up wallet extension...');
+      
+      // Enable the extension with app name
+      const enabledExtensions = await web3Enable('DotPOAP');
+      setExtensions(enabledExtensions);
+      
+      logger.info(`📱 Wallet extensions enabled`, {
+        count: enabledExtensions.length,
+        extensions: enabledExtensions.map(ext => ext.name)
+      });
+
+      if (enabledExtensions.length === 0) {
+        logger.warn('⚠️ No wallet extensions enabled');
+        return;
+      }
+
+      // Subscribe to account changes
+      const unsubscribe = await web3AccountsSubscribe((injectedAccounts) => {
+        logger.info(`👤 Accounts updated`, {
+          count: injectedAccounts.length,
+          sources: [...new Set(injectedAccounts.map(acc => acc.meta.source))]
+        });
+        
+        setAccounts(injectedAccounts);
+        
+        // Auto-select first account if none selected
+        if (injectedAccounts.length > 0 && !selectedAccount) {
+          setSelectedAccount(injectedAccounts[0]);
+          setIsWalletConnected(true);
+        }
+      });
+
+      // Return cleanup function
+      return unsubscribe;
+    } catch (error) {
+      logger.error('❌ Failed to setup wallet extension:', error);
+      setWalletError('Failed to setup wallet extension');
+    }
+  };
+
+  // Get injector for selected account
+  const getInjector = async (account: InjectedAccountWithMeta) => {
+    try {
+      if (account.meta.source) {
+        const injector = await web3FromSource(account.meta.source);
+        setInjector(injector);
+        logger.success('✅ Injector set for account', {
+          account: account.meta.name || 'Unnamed',
+          source: account.meta.source
+        });
+      }
+    } catch (error) {
+      logger.error('❌ Failed to get injector:', error);
+      setWalletError('Failed to get account injector');
+    }
+  };
+
   // Retry connection with exponential backoff
   const retryConnection = async (attempt = 0) => {
     const maxRetries = POLKADOT_CONFIG.API.retryAttempts;
@@ -360,18 +424,53 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
 
     try {
       setWalletError(null);
-      walletLogger.info('� Starting wallet connection process...');
+      walletLogger.info('🚀 Starting wallet connection process...');
 
       // Check if we're in a browser environment
       if (typeof window === 'undefined') {
         throw new Error('Wallet connection is only available in browser environment');
       }
 
-      // Enable the extension with app name
-      walletLogger.debug('🔍 Searching for wallet extensions...');
+      // Enhanced debugging: Log all available global objects
+      walletLogger.debug('🔍 Global objects check:', {
+        hasWindow: !!window,
+        hasInjectedWeb3: !!(window as any).injectedWeb3,
+        injectedWeb3Keys: (window as any).injectedWeb3 ? Object.keys((window as any).injectedWeb3) : [],
+        hasPolkadot: !!(window as any).polkadot,
+        hasTalisman: !!(window as any).talisman,
+        hasSubwallet: !!(window as any).subwallet,
+        hasNova: !!(window as any).nova,
+      });
+
+      // Check if any wallet is available before attempting connection
+      const availableWallets = (window as any).injectedWeb3;
+      if (!availableWallets || Object.keys(availableWallets).length === 0) {
+        // Additional check for direct wallet objects
+        const directWallets = {
+          polkadot: !!(window as any).polkadot,
+          talisman: !!(window as any).talisman,
+          subwallet: !!(window as any).subwallet,
+          nova: !!(window as any).nova,
+        };
+        
+        const hasDirectWallet = Object.values(directWallets).some(Boolean);
+        
+        if (!hasDirectWallet) {
+          throw new Error(
+            'No wallet extensions detected. Please install a Polkadot wallet extension and refresh the page.'
+          );
+        } else {
+          walletLogger.info('🔍 Direct wallet objects found:', directWallets);
+        }
+      }
+
+      walletLogger.info('🔍 Available wallet extensions:', Object.keys(availableWallets || {}));
+
+      // Enable the extension with app name (following tutorial pattern)
+      walletLogger.debug('🔍 Enabling wallet extensions...');
       const extensions = await web3Enable('DotPOAP');
 
-      walletLogger.info(`📱 Wallet extensions discovered`, {
+      walletLogger.info(`📱 Wallet extensions enabled`, {
         count: extensions.length,
         extensions: extensions.map(ext => ext.name)
       });
@@ -379,17 +478,33 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
       if (extensions.length === 0) {
         const supportedWallets = POLKADOT_CONFIG.WALLET.supportedWallets.join(', ');
         throw new Error(
-          `No wallet extension found. Please install one of the supported wallets: ${supportedWallets}`
+          `No wallet extension could be enabled. Please make sure one of these is installed and unlocked: ${supportedWallets}`
         );
       }
 
       // Get accounts with proper error handling
       walletLogger.debug('🔍 Retrieving wallet accounts...');
-      const allAccounts = await web3Accounts();
+      let allAccounts: InjectedAccountWithMeta[] = [];
+      
+      try {
+        allAccounts = await web3Accounts();
+      } catch (accountsError) {
+        walletLogger.error('Failed to get accounts:', accountsError);
+        throw new Error(
+          'Failed to retrieve accounts from wallet. Please make sure your wallet is unlocked and has accounts.'
+        );
+      }
 
       walletLogger.info(`👤 Accounts retrieved`, {
         totalAccounts: allAccounts.length,
-        accountSources: [...new Set(allAccounts.map(acc => acc.meta.source))]
+        accountSources: [...new Set(allAccounts.map(acc => acc.meta.source))],
+        accountDetails: allAccounts.map(acc => ({
+          name: acc.meta.name,
+          source: acc.meta.source,
+          address: acc.address,
+          addressLength: acc.address.length,
+          isValidFormat: /^[0-9]/.test(acc.address)
+        }))
       });
 
       if (allAccounts.length === 0) {
@@ -402,25 +517,40 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
       }
 
       // Filter accounts for Polkadot/Substrate (SS58 format 0)
-      const polkadotAccounts = allAccounts.filter(account =>
-        account.address.length === 48 // Standard Polkadot address length
-      );
+      // Be more lenient with address validation for better compatibility
+      const polkadotAccounts = allAccounts.filter(account => {
+        // Accept addresses that are 47-49 characters (allowing for some variation)
+        const isValidLength = account.address.length >= 47 && account.address.length <= 49;
+        // Check if it's a valid SS58 format (starts with numbers)
+        const isValidFormat = /^[0-9]/.test(account.address);
+        return isValidLength && isValidFormat;
+      });
 
       walletLogger.debug('🔍 Account filtering results', {
         totalAccounts: allAccounts.length,
         polkadotCompatible: polkadotAccounts.length,
-        filtered: polkadotAccounts.length > 0
+        filtered: polkadotAccounts.length > 0,
+        filteredAccounts: polkadotAccounts.map(acc => ({
+          name: acc.meta.name,
+          address: acc.address,
+          source: acc.meta.source
+        }))
       });
 
+      // Use filtered accounts if available, otherwise use all accounts
       const finalAccounts = polkadotAccounts.length > 0 ? polkadotAccounts : allAccounts;
 
       if (polkadotAccounts.length === 0) {
-        walletLogger.warn('⚠️ No Polkadot-compatible accounts found, using all accounts');
+        walletLogger.warn('⚠️ No strictly Polkadot-compatible accounts found, using all accounts');
       }
 
+      // Set accounts and select the first one
       setAccounts(finalAccounts);
       setSelectedAccount(finalAccounts[0]);
       setIsWalletConnected(true);
+
+      // Get injector for the selected account
+      await getInjector(finalAccounts[0]);
 
       walletLogger.success('✅ Wallet connection successful', {
         selectedAccount: finalAccounts[0].meta.name || 'Unnamed',
@@ -434,6 +564,23 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
       walletLogger.error('❌ Wallet connection failed:', errorMessage);
       setWalletError(errorMessage);
       setIsWalletConnected(false);
+      
+      // Provide more helpful error messages
+      if (errorMessage.includes('No wallet extensions detected')) {
+        setWalletError(
+          'No Polkadot wallet found. Please install a wallet extension like Polkadot.js or Talisman.'
+        );
+      } else if (errorMessage.includes('No accounts found')) {
+        setWalletError(
+          'No accounts found in your wallet. Please create an account and try again.'
+        );
+      } else if (errorMessage.includes('Failed to retrieve accounts')) {
+        setWalletError(
+          'Could not access your wallet accounts. Please make sure your wallet is unlocked.'
+        );
+      } else {
+        setWalletError(errorMessage);
+      }
     }
   };
 
@@ -443,12 +590,14 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
     setSelectedAccount(null);
     setIsWalletConnected(false);
     setWalletError(null);
+    setInjector(null);
     console.log('🔌 Wallet disconnected');
   };
 
   // Select account
-  const selectAccount = (account: InjectedAccountWithMeta) => {
+  const selectAccount = async (account: InjectedAccountWithMeta) => {
     setSelectedAccount(account);
+    await getInjector(account);
   };
 
   // Reconnect API with cleanup
@@ -533,6 +682,13 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
     };
   }, []);
 
+  // Setup wallet extension when API is ready
+  useEffect(() => {
+    if (isApiReady && !extensions) {
+      setupWalletExtension();
+    }
+  }, [isApiReady, extensions]);
+
   const value: PolkadotContextType = {
     // API
     api,
@@ -545,6 +701,8 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
     selectedAccount,
     isWalletConnected,
     walletError,
+    extensions,
+    injector,
 
     // Contract
     contract,
