@@ -69,6 +69,9 @@ const Navigation = ({ className }: NavigationProps) => {
             <Link to="/about" className="text-foreground hover:text-primary transition-smooth font-medium">
               About
             </Link>
+            <Link to="/faq" className="text-foreground hover:text-primary transition-smooth font-medium">
+              FAQ
+            </Link>
             <NavDropdown
               title="Create"
               items={[
@@ -83,7 +86,7 @@ const Navigation = ({ className }: NavigationProps) => {
                 { label: "How it Works", href: "/#how-it-works" },
                 { label: "What is DotPOAP", href: "/#what-is-dotpoap" },
                 { label: "Wallet Demo", href: "/wallet-demo" },
-                { label: "Documentation", href: "https://github.com/your-repo" },
+                { label: "Documentation", href: "https://github.com/robinsoncodes/DotPOAP" },
               ]}
             />
           </div>
@@ -146,6 +149,13 @@ const Navigation = ({ className }: NavigationProps) => {
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 About
+              </Link>
+              <Link
+                to="/faq"
+                className="text-foreground hover:text-primary transition-smooth"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                FAQ
               </Link>
               <Link
                 to="/wallet-demo"

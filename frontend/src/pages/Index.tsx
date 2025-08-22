@@ -2,6 +2,7 @@ import Navigation from "@/components/Navigation";
 import HeroSection from "@/components/HeroSection";
 import Footer from "@/components/Footer";
 import { ConnectionStatus } from "@/components/ConnectionStatus";
+import { UserOnboarding } from "@/components/UserOnboarding";
 
 const Index = () => {
   return (
@@ -11,8 +12,9 @@ const Index = () => {
 
       {/* Debug Connection Status - Remove in production */}
       <div className="container mx-auto px-4 py-8">
-        <div className="flex justify-center">
+        <div className="flex justify-center gap-4">
           <ConnectionStatus />
+          <UserOnboarding />
         </div>
       </div>
 
