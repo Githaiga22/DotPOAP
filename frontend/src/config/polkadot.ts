@@ -3,19 +3,21 @@ export const POLKADOT_CONFIG = {
   // Asset Hub Paseo testnet configuration
   NETWORK: {
     name: 'Asset Hub Paseo',
-    rpcUrl: 'wss://paseo-asset-hub-rpc.polkadot.io',
+    rpcUrl: 'wss://sys.ibp.network/asset-hub-paseo', // Changed to working endpoint
     // Alternative RPC endpoints (ordered by reliability and performance)
     fallbackRpcUrls: [
+      // IBP Network - Community infrastructure (working)
+      'wss://sys.ibp.network/asset-hub-paseo',
       // Dwellir - High performance, reliable
       'wss://api-paseo.n.dwellir.com/8c94c844-c962-4c83-8972-02744738983f',
-      // IBP Network - Community infrastructure
-      'wss://sys.ibp.network/asset-hub-paseo',
       // LuckyFriday - Alternative provider
       'wss://rpc-asset-hub-paseo.luckyfriday.io',
       // Dotters Network - Community provider
       'wss://paseo-asset-hub.dotters.network',
       // StakeWorld - Additional fallback
       'wss://paseo-asset-hub-rpc.stakeworld.io',
+      // Original endpoint as last resort
+      'wss://paseo-asset-hub-rpc.polkadot.io',
     ],
     chainId: 'asset-hub-paseo',
     ss58Format: 0, // Polkadot SS58 format
@@ -51,7 +53,7 @@ export const POLKADOT_CONFIG = {
   // API configuration
   API: {
     // Connection timeout in milliseconds (optimized for WebSocket connections)
-    connectionTimeout: 20000, // 20 seconds for initial connection
+    connectionTimeout: 15000, // Reduced to 15 seconds for faster feedback
     // Retry attempts for failed connections
     retryAttempts: 3, // Balanced retry attempts
     // Retry delay in milliseconds (with exponential backoff)
