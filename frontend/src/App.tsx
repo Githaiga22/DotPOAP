@@ -9,6 +9,8 @@ import Index from "./pages/Index";
 import Events from "./pages/Events";
 import MyPoaps from "./pages/MyPoaps";
 import About from "./pages/About";
+import FAQ from "./pages/FAQ";
+import Claim from "./pages/Claim";
 import WalletDemo from "./pages/WalletDemo";
 import NotFound from "./pages/NotFound";
 
@@ -32,6 +34,8 @@ const App = () => (
               <Route path="/events" element={<Events />} />
               <Route path="/my-poaps" element={<MyPoaps />} />
               <Route path="/about" element={<About />} />
+              <Route path="/faq" element={<FAQ />} />
+              <Route path="/claim" element={<Claim />} />
               <Route path="/wallet-demo" element={<WalletDemo />} />
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

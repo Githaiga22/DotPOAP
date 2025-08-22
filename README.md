@@ -115,16 +115,95 @@ DotPoap will first focus on **Polkadot Africa communities**, including:
 
 ---
 
-## 🤝 Contributing  
+## 🤝 Contributing
 
-We welcome contributions!  
-- Fork the repo  
-- Submit PRs for fixes and new features  
-- Join our **community discussions**  
+We welcome contributions from the Polkadot community!
+
+### How to Contribute
+- **Fork the repository** and create your feature branch
+- **Submit Pull Requests** for bug fixes and new features
+- **Join community discussions** on [Polkadot Forum](https://forum.polkadot.network/)
+- **Report issues** and suggest improvements via GitHub Issues
+- **Share feedback** from your local community events
+
+### Development Setup
+```bash
+# Clone the repository
+git clone https://github.com/robinsoncodes/DotPOAP.git
+
+# Install frontend dependencies
+cd frontend && npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+```
+
+### Community Links
+- **Polkadot Forum**: [forum.polkadot.network](https://forum.polkadot.network/)
+- **Polkadot Discord**: [discord.gg/polkadot](https://discord.gg/polkadot)
+- **Substrate Developers**: [substrate.io](https://substrate.io/)
+- **ink! Smart Contracts**: [use.ink](https://use.ink/)
 
 ---
 
-## 📩 Contact  
+## ❓ Frequently Asked Questions
+
+### **1. What is DotPOAP and how is it different from regular POAPs?**
+DotPOAP is a Proof-of-Attendance Protocol built specifically for the Polkadot ecosystem. Unlike Ethereum-based POAPs, DotPOAP offers near-zero transaction fees, faster processing, and is designed for African grassroots communities with localized features and accessibility.
+
+### **2. Which wallets are supported?**
+DotPOAP supports all major Polkadot wallets including:
+- **Polkadot.js Extension** (Official browser extension)
+- **Talisman** (Multi-chain wallet for Polkadot & Ethereum)
+- **SubWallet** (Comprehensive non-custodial wallet)
+- **Nova Wallet** (Next-generation mobile wallet)
+
+### **3. How do I create an event and issue DotPOAPs?**
+1. Connect your Polkadot wallet to the platform
+2. Navigate to "Create Event" in the dashboard
+3. Fill in event details (name, date, location, description)
+4. Upload your custom POAP design (PNG/JPG, 500x500px recommended)
+5. Set distribution parameters (manual or QR code)
+6. Deploy your event smart contract on Asset Hub Paseo
+
+### **4. What network does DotPOAP use?**
+DotPOAP operates on **Asset Hub Paseo Testnet**, a specialized parachain optimized for NFTs and digital assets. This ensures low fees and fast transactions while maintaining full Polkadot ecosystem compatibility.
+
+### **5. How much does it cost to create and distribute DotPOAPs?**
+Creating events and minting DotPOAPs costs minimal fees (typically under $0.01 USD equivalent in PAS tokens). This makes it affordable for grassroots communities and large-scale events alike.
+
+### **6. Can I use DotPOAP for virtual events?**
+Absolutely! DotPOAP supports both physical and virtual events. For virtual events, you can distribute POAPs via:
+- Direct wallet addresses
+- QR codes shared in video calls
+- Email distribution lists
+- Integration with event platforms
+
+### **7. How do attendees claim their DotPOAPs?**
+Attendees can claim DotPOAPs by:
+- Scanning a QR code at the event
+- Entering a claim code provided by organizers
+- Having organizers directly mint to their wallet address
+- Using the self-service claim portal
+
+### **8. Are DotPOAPs transferable or tradeable?**
+DotPOAPs are designed as non-transferable proof-of-attendance tokens. They remain permanently associated with the original recipient's wallet to maintain authenticity and prevent speculation.
+
+### **9. What file formats are supported for POAP designs?**
+- **Image formats**: PNG, JPG, JPEG, SVG
+- **Recommended size**: 500x500 pixels
+- **Maximum file size**: 5MB
+- **Design guidelines**: High contrast, clear text, recognizable at small sizes
+
+### **10. How can I integrate DotPOAP with my existing event management system?**
+DotPOAP provides APIs and webhooks for integration with popular event platforms. Contact our team for custom integration support or check our developer documentation for self-service options.
+
+---
+
+## 📩 Contact
 
 
 Led by **Allan Robinson**, Community Lead at **Polkadot Kisumu** 🌍  
