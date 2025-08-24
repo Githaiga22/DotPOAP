@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
@@ -39,8 +39,25 @@ interface CreateEventFormProps {
 }
 
 export const CreateEventForm: React.FC<CreateEventFormProps> = ({ onSuccess }) => {
-  const { isWalletConnected, selectedAccount } = usePolkadot();
+  const { isWalletConnected, selectedAccount, accounts, extensions } = usePolkadot();
   const { createEvent, isCreatingEvent } = useContract();
+
+  // Debug logging to track state changes
+  console.log('🔍 CreateEventForm - Wallet State:', {
+    isWalletConnected,
+    selectedAccount: selectedAccount?.meta?.name || 'None',
+    accountsCount: accounts.length,
+    extensionsCount: extensions?.length || 0
+  });
+
+  // Force re-render when wallet state changes
+  useEffect(() => {
+    console.log('🔄 CreateEventForm - Wallet state changed:', {
+      isWalletConnected,
+      selectedAccount: selectedAccount?.meta?.name || 'None',
+      accountsCount: accounts.length
+    });
+  }, [isWalletConnected, selectedAccount, accounts]);
 
   const form = useForm<CreateEventFormData>({
     resolver: zodResolver(createEventSchema),
@@ -83,8 +100,15 @@ export const CreateEventForm: React.FC<CreateEventFormProps> = ({ onSuccess }) =
     return (
       <Card>
         <CardContent className="p-6">
-          <div className="text-center text-muted-foreground">
-            Please connect your wallet to create events
+          <div className="text-center space-y-2">
+            <div className="text-muted-foreground">
+              Please connect your wallet to create events
+            </div>
+            <div className="text-xs text-muted-foreground">
+              Debug: isWalletConnected={isWalletConnected.toString()}, 
+              accounts={accounts.length}, 
+              extensions={extensions?.length || 0}
+            </div>
           </div>
         </CardContent>
       </Card>
