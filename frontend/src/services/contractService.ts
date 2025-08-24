@@ -3,6 +3,7 @@ import { ContractPromise } from '@polkadot/api-contract';
 import { InjectedAccountWithMeta } from '@polkadot/extension-inject/types';
 import { web3FromAddress } from '@polkadot/extension-dapp';
 import { POLKADOT_CONFIG } from '@/config/polkadot';
+import { AnyJson } from '@polkadot/types/types';
 
 // Types for contract interactions
 export interface EventData {
@@ -54,6 +55,18 @@ export class ContractService {
     return result.asOk;
   }
 
+  // Helper method to safely parse contract output
+  private safeParseOutput(output: any): any {
+    if (!output) return null;
+    const data = output.toHuman();
+    return data;
+  }
+
+  // Helper method to safely check if data is an array
+  private isArray(data: any): data is any[] {
+    return Array.isArray(data);
+  }
+
   // Read-only contract calls (queries)
   
   async getEvent(eventId: number): Promise<EventData | null> {
@@ -62,7 +75,6 @@ export class ContractService {
         '', // caller address (empty for queries)
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.read,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         },
         eventId
       );
@@ -72,7 +84,7 @@ export class ContractService {
         return null;
       }
 
-      const data = output?.toHuman();
+      const data = this.safeParseOutput(output);
       return data ? this.parseEventData(data) : null;
     } catch (error) {
       console.error('Error getting event:', error);
@@ -86,7 +98,6 @@ export class ContractService {
         '',
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.read,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         }
       );
 
@@ -95,8 +106,11 @@ export class ContractService {
         return [];
       }
 
-      const data = output?.toHuman();
-      return data ? data.map((event: any) => this.parseEventData(event)) : [];
+      const data = this.safeParseOutput(output);
+      if (data && this.isArray(data)) {
+        return data.map((event: any) => this.parseEventData(event));
+      }
+      return [];
     } catch (error) {
       console.error('Error getting all events:', error);
       throw error;
@@ -109,7 +123,6 @@ export class ContractService {
         '',
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.read,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         },
         userAddress
       );
@@ -119,8 +132,11 @@ export class ContractService {
         return [];
       }
 
-      const data = output?.toHuman();
-      return data ? data.map((poap: any) => this.parsePoapData(poap)) : [];
+      const data = this.safeParseOutput(output);
+      if (data && this.isArray(data)) {
+        return data.map((poap: any) => this.parsePoapData(poap));
+      }
+      return [];
     } catch (error) {
       console.error('Error getting user POAPs:', error);
       throw error;
@@ -133,7 +149,6 @@ export class ContractService {
         '',
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.read,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         },
         eventId
       );
@@ -143,8 +158,11 @@ export class ContractService {
         return [];
       }
 
-      const data = output?.toHuman();
-      return data ? data.map((poap: any) => this.parsePoapData(poap)) : [];
+      const data = this.safeParseOutput(output);
+      if (data && this.isArray(data)) {
+        return data.map((poap: any) => this.parsePoapData(poap));
+      }
+      return [];
     } catch (error) {
       console.error('Error getting event POAPs:', error);
       throw error;
@@ -168,7 +186,6 @@ export class ContractService {
       const tx = this.contract.tx.createEvent(
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.write,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         },
         name,
         description,
@@ -179,7 +196,7 @@ export class ContractService {
       );
 
       return new Promise((resolve, reject) => {
-        tx.signAndSend(account.address, { signer }, (result) => {
+        tx.signAndSend(account.address, { signer: signer as any }, (result) => {
           if (result.status.isInBlock) {
             console.log('Transaction in block:', result.status.asInBlock.toString());
           } else if (result.status.isFinalized) {
@@ -208,7 +225,6 @@ export class ContractService {
       const tx = this.contract.tx.mintPoap(
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.write,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         },
         eventId,
         recipient,
@@ -216,7 +232,7 @@ export class ContractService {
       );
 
       return new Promise((resolve, reject) => {
-        tx.signAndSend(account.address, { signer }, (result) => {
+        tx.signAndSend(account.address, { signer: signer as any }, (result) => {
           if (result.status.isInBlock) {
             console.log('Transaction in block:', result.status.asInBlock.toString());
           } else if (result.status.isFinalized) {
@@ -240,13 +256,12 @@ export class ContractService {
       const tx = this.contract.tx.activateEvent(
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.write,
-          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
         },
         eventId
       );
 
       return new Promise((resolve, reject) => {
-        tx.signAndSend(account.address, { signer }, (result) => {
+        tx.signAndSend(account.address, { signer: signer as any }, (result) => {
           if (result.status.isFinalized) {
             resolve(result.status.asFinalized.toString());
           } else if (result.isError) {
