@@ -363,10 +363,11 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
         
         setAccounts(injectedAccounts);
         
-        // Auto-select first account if none selected
+        // Auto-select first account if none selected, but don't set connection state
+        // The connection state should only be set when user explicitly connects
         if (injectedAccounts.length > 0 && !selectedAccount) {
           setSelectedAccount(injectedAccounts[0]);
-          setIsWalletConnected(true);
+          // Don't set isWalletConnected here - wait for explicit connection
         }
       });
 
@@ -548,6 +549,12 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
       setAccounts(finalAccounts);
       setSelectedAccount(finalAccounts[0]);
       setIsWalletConnected(true);
+      
+      walletLogger.debug('🔧 State updated', {
+        accountsCount: finalAccounts.length,
+        selectedAccount: finalAccounts[0].meta.name || 'Unnamed',
+        isWalletConnected: true
+      });
 
       // Get injector for the selected account
       await getInjector(finalAccounts[0]);
@@ -682,12 +689,27 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
     };
   }, []);
 
-  // Setup wallet extension when API is ready
+  // Don't auto-setup wallet extensions - wait for user to click connect
+  // useEffect(() => {
+  //   if (isApiReady && !extensions) {
+  //     setupWalletExtension();
+  //   }
+  // }, [isApiReady, extensions]);
+
+  // Synchronize wallet connection state when accounts are available
   useEffect(() => {
-    if (isApiReady && !extensions) {
-      setupWalletExtension();
+    // Only set wallet as connected if user has explicitly connected AND accounts are available
+    if (accounts.length > 0 && selectedAccount && extensions) {
+      // This ensures the UI reflects the actual connection state
+      if (!isWalletConnected) {
+        setIsWalletConnected(true);
+        logger.info('🔄 Wallet connection state synchronized', {
+          accountsCount: accounts.length,
+          selectedAccount: selectedAccount.meta.name || 'Unnamed'
+        });
+      }
     }
-  }, [isApiReady, extensions]);
+  }, [accounts, selectedAccount, extensions, isWalletConnected]);
 
   const value: PolkadotContextType = {
     // API
