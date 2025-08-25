@@ -5,12 +5,13 @@ export interface WalletInfo {
   installed: boolean;
   downloadUrl: string;
   description: string;
+  injectionKey: string; // The key used to detect the wallet
 }
 
 // Check if we're in a browser environment
 export const isBrowser = () => typeof window !== 'undefined';
 
-// Detect available wallet extensions
+// Enhanced wallet detection with proper injection patterns
 export const detectWallets = (): WalletInfo[] => {
   if (!isBrowser()) {
     return [];
@@ -19,27 +20,35 @@ export const detectWallets = (): WalletInfo[] => {
   const wallets: WalletInfo[] = [
     {
       name: 'Polkadot.js Extension',
-      installed: !!(window as any).injectedWeb3?.['polkadot-js'],
+      installed: !!(window as any).injectedWeb3?.['polkadot-js'] || 
+                 !!(window as any).polkadot,
       downloadUrl: 'https://polkadot.js.org/extension/',
-      description: 'The official Polkadot extension for managing accounts and signing transactions'
+      description: 'The official Polkadot extension for managing accounts and signing transactions',
+      injectionKey: 'polkadot-js'
     },
     {
       name: 'Talisman',
-      installed: !!(window as any).injectedWeb3?.['talisman'],
+      installed: !!(window as any).injectedWeb3?.talisman || 
+                 !!(window as any).talisman,
       downloadUrl: 'https://talisman.xyz/',
-      description: 'A beautiful and user-friendly wallet for Polkadot and Ethereum'
+      description: 'A beautiful and user-friendly wallet for Polkadot and Ethereum',
+      injectionKey: 'talisman'
     },
     {
       name: 'SubWallet',
-      installed: !!(window as any).injectedWeb3?.['subwallet-js'],
+      installed: !!(window as any).injectedWeb3?.['subwallet-js'] || 
+                 !!(window as any).subwallet,
       downloadUrl: 'https://subwallet.app/',
-      description: 'Comprehensive wallet supporting multiple Substrate-based networks'
+      description: 'Comprehensive wallet supporting multiple Substrate-based networks',
+      injectionKey: 'subwallet-js'
     },
     {
       name: 'Nova Wallet',
-      installed: !!(window as any).injectedWeb3?.['nova'],
+      installed: !!(window as any).injectedWeb3?.['nova-wallet'] || 
+                 !!(window as any).nova,
       downloadUrl: 'https://novawallet.io/',
-      description: 'Next-gen wallet for Polkadot & Kusama ecosystem'
+      description: 'Next-gen wallet for Polkadot & Kusama ecosystem',
+      injectionKey: 'nova-wallet'
     }
   ];
 
@@ -105,6 +114,32 @@ export const waitForWalletInjection = (timeout = 3000): Promise<boolean> => {
       }
     }, 100);
   });
+};
+
+// Enhanced wallet detection with multiple injection patterns
+export const detectWalletInjection = (walletName: string): boolean => {
+  if (!isBrowser()) return false;
+
+  const wallet = detectWallets().find(w => w.name === walletName);
+  if (!wallet) return false;
+
+  // Check multiple injection patterns for each wallet
+  switch (wallet.injectionKey) {
+    case 'polkadot-js':
+      return !!(window as any).injectedWeb3?.['polkadot-js'] || 
+             !!(window as any).polkadot;
+    case 'talisman':
+      return !!(window as any).injectedWeb3?.talisman || 
+             !!(window as any).talisman;
+    case 'subwallet-js':
+      return !!(window as any).injectedWeb3?.['subwallet-js'] || 
+             !!(window as any).subwallet;
+    case 'nova-wallet':
+      return !!(window as any).injectedWeb3?.['nova-wallet'] || 
+             !!(window as any).nova;
+    default:
+      return false;
+  }
 };
 
 // Format address for display (show first 6 and last 4 characters)

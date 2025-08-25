@@ -17,7 +17,11 @@ const SUPPORTED_WALLETS = [
     description: 'The official Polkadot browser extension',
     icon: '🔗',
     downloadUrl: 'https://polkadot.js.org/extension/',
-    isInstalled: () => !!(window as any).injectedWeb3?.['polkadot-js']
+    isInstalled: () => {
+      // Check multiple injection patterns for Polkadot.js
+      return !!(window as any).injectedWeb3?.['polkadot-js'] || 
+             !!(window as any).polkadot;
+    }
   },
   {
     id: 'talisman',
@@ -25,7 +29,11 @@ const SUPPORTED_WALLETS = [
     description: 'A beautiful wallet for Polkadot & Ethereum',
     icon: '🔮',
     downloadUrl: 'https://talisman.xyz/',
-    isInstalled: () => !!(window as any).injectedWeb3?.talisman
+    isInstalled: () => {
+      // Check multiple injection patterns for Talisman
+      return !!(window as any).injectedWeb3?.talisman || 
+             !!(window as any).talisman;
+    }
   },
   {
     id: 'subwallet-js',
@@ -33,7 +41,11 @@ const SUPPORTED_WALLETS = [
     description: 'The comprehensive non-custodial wallet',
     icon: '🌟',
     downloadUrl: 'https://subwallet.app/',
-    isInstalled: () => !!(window as any).injectedWeb3?.['subwallet-js']
+    isInstalled: () => {
+      // Check multiple injection patterns for SubWallet
+      return !!(window as any).injectedWeb3?.['subwallet-js'] || 
+             !!(window as any).subwallet;
+    }
   },
   {
     id: 'nova-wallet',
@@ -41,7 +53,11 @@ const SUPPORTED_WALLETS = [
     description: 'Next-gen wallet for Polkadot ecosystem',
     icon: '⭐',
     downloadUrl: 'https://novawallet.io/',
-    isInstalled: () => !!(window as any).injectedWeb3?.['nova-wallet']
+    isInstalled: () => {
+      // Check multiple injection patterns for Nova Wallet
+      return !!(window as any).injectedWeb3?.['nova-wallet'] || 
+             !!(window as any).nova;
+    }
   }
 ];
 

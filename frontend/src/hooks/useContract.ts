@@ -59,6 +59,26 @@ export const useContract = (): UseContractReturn => {
     return new ContractService(api, contract);
   }, [api, contract, isApiReady]);
 
+  // Load all events
+  const loadEvents = useCallback(async () => {
+    if (!contractService) return;
+
+    setIsLoading(true);
+    try {
+      const eventsData = await contractService.getAllEvents();
+      setEvents(eventsData);
+    } catch (error) {
+      console.error('Error loading events:', error);
+      toast({
+        title: "Error",
+        description: "Failed to load events",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, [contractService, toast]);
+
   // Create event
   const createEvent = useCallback(async (
     name: string,
@@ -68,10 +88,27 @@ export const useContract = (): UseContractReturn => {
     endTime: number,
     maxCapacity: number
   ) => {
-    if (!contractService || !selectedAccount) {
+    // More granular pre-checks to surface exact issue
+    if (!isApiReady) {
       toast({
-        title: "Error",
-        description: "Please connect your wallet first",
+        title: "Network not ready",
+        description: "The node connection is not ready yet. Please wait a moment and try again.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!contractService) {
+      toast({
+        title: "Contract unavailable",
+        description: "The smart contract is not initialized. Please refresh the page or reconnect.",
+        variant: "destructive",
+      });
+      return;
+    }
+    if (!selectedAccount) {
+      toast({
+        title: "No account selected",
+        description: "Please connect your wallet and select an account.",
         variant: "destructive",
       });
       return;
@@ -108,7 +145,7 @@ export const useContract = (): UseContractReturn => {
     } finally {
       setIsCreatingEvent(false);
     }
-  }, [contractService, selectedAccount, toast]);
+  }, [contractService, selectedAccount, toast, isApiReady, loadEvents]);
 
   // Mint POAP
   const mintPoap = useCallback(async (
@@ -187,26 +224,6 @@ export const useContract = (): UseContractReturn => {
       });
     }
   }, [contractService, selectedAccount, toast]);
-
-  // Load all events
-  const loadEvents = useCallback(async () => {
-    if (!contractService) return;
-
-    setIsLoading(true);
-    try {
-      const eventsData = await contractService.getAllEvents();
-      setEvents(eventsData);
-    } catch (error) {
-      console.error('Error loading events:', error);
-      toast({
-        title: "Error",
-        description: "Failed to load events",
-        variant: "destructive",
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, [contractService, toast]);
 
   // Load user POAPs
   const loadUserPoaps = useCallback(async (userAddress?: string) => {
