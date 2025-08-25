@@ -186,6 +186,8 @@ export class ContractService {
       const tx = this.contract.tx.createEvent(
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.write,
+          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
+          value: 0,
         },
         name,
         description,
@@ -197,6 +199,33 @@ export class ContractService {
 
       return new Promise((resolve, reject) => {
         tx.signAndSend(account.address, { signer: signer as any }, (result) => {
+          // Handle dispatch errors
+          if ((result as any).dispatchError) {
+            const dispatchError: any = (result as any).dispatchError;
+            if (dispatchError.isModule) {
+              try {
+                const decoded = this.api.registry.findMetaError(dispatchError.asModule);
+                const { section, name, docs } = decoded;
+                reject(new Error(`Transaction failed: ${section}.${name} - ${docs.join(' ')}`));
+              } catch (_) {
+                reject(new Error(`Transaction failed with module error`));
+              }
+            } else {
+              reject(new Error(dispatchError.toString()));
+            }
+            return;
+          }
+
+          // Handle extrinsic events
+          const events = (result as any).events || [];
+          for (const { event } of events) {
+            const method = `${event.section}.${event.method}`;
+            if (method === 'system.ExtrinsicFailed') {
+              reject(new Error('Extrinsic failed'));
+              return;
+            }
+          }
+
           if (result.status.isInBlock) {
             console.log('Transaction in block:', result.status.asInBlock.toString());
           } else if (result.status.isFinalized) {
@@ -225,6 +254,8 @@ export class ContractService {
       const tx = this.contract.tx.mintPoap(
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.write,
+          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
+          value: 0,
         },
         eventId,
         recipient,
@@ -233,6 +264,31 @@ export class ContractService {
 
       return new Promise((resolve, reject) => {
         tx.signAndSend(account.address, { signer: signer as any }, (result) => {
+          if ((result as any).dispatchError) {
+            const dispatchError: any = (result as any).dispatchError;
+            if (dispatchError.isModule) {
+              try {
+                const decoded = this.api.registry.findMetaError(dispatchError.asModule);
+                const { section, name, docs } = decoded;
+                reject(new Error(`Transaction failed: ${section}.${name} - ${docs.join(' ')}`));
+              } catch (_) {
+                reject(new Error(`Transaction failed with module error`));
+              }
+            } else {
+              reject(new Error(dispatchError.toString()));
+            }
+            return;
+          }
+
+          const events = (result as any).events || [];
+          for (const { event } of events) {
+            const method = `${event.section}.${event.method}`;
+            if (method === 'system.ExtrinsicFailed') {
+              reject(new Error('Extrinsic failed'));
+              return;
+            }
+          }
+
           if (result.status.isInBlock) {
             console.log('Transaction in block:', result.status.asInBlock.toString());
           } else if (result.status.isFinalized) {
@@ -256,12 +312,39 @@ export class ContractService {
       const tx = this.contract.tx.activateEvent(
         {
           gasLimit: POLKADOT_CONFIG.CONTRACT.gasLimit.write,
+          storageDepositLimit: POLKADOT_CONFIG.CONTRACT.storageDepositLimit,
+          value: 0,
         },
         eventId
       );
 
       return new Promise((resolve, reject) => {
         tx.signAndSend(account.address, { signer: signer as any }, (result) => {
+          if ((result as any).dispatchError) {
+            const dispatchError: any = (result as any).dispatchError;
+            if (dispatchError.isModule) {
+              try {
+                const decoded = this.api.registry.findMetaError(dispatchError.asModule);
+                const { section, name, docs } = decoded;
+                reject(new Error(`Transaction failed: ${section}.${name} - ${docs.join(' ')}`));
+              } catch (_) {
+                reject(new Error(`Transaction failed with module error`));
+              }
+            } else {
+              reject(new Error(dispatchError.toString()));
+            }
+            return;
+          }
+
+          const events = (result as any).events || [];
+          for (const { event } of events) {
+            const method = `${event.section}.${event.method}`;
+            if (method === 'system.ExtrinsicFailed') {
+              reject(new Error('Extrinsic failed'));
+              return;
+            }
+          }
+
           if (result.status.isFinalized) {
             resolve(result.status.asFinalized.toString());
           } else if (result.isError) {
