@@ -282,8 +282,17 @@ export const PolkadotProvider: React.FC<PolkadotProviderProps> = ({ children }) 
 
         // Validate contract address format
         const contractAddress = POLKADOT_CONFIG.CONTRACT.address;
-        if (!contractAddress || contractAddress.length !== 42) {
-          throw new Error('Invalid contract address format');
+        if (!contractAddress) {
+          throw new Error('Missing contract address');
+        }
+        const isHex = contractAddress.startsWith('0x');
+        const isValidHex32 = isHex && contractAddress.length === 66; // 0x + 64 hex (AccountId32)
+        const isValidSs58 = !isHex && contractAddress.length >= 47 && contractAddress.length <= 49; // typical SS58 length
+        if (!isValidHex32 && !isValidSs58) {
+          const hint = isHex
+            ? `Got hex length ${contractAddress.length}. Expected 66 (0x + 64).`
+            : `Got SS58 length ${contractAddress.length}. Expected ~48.`;
+          throw new Error(`Invalid contract address format. ${hint}`);
         }
 
         // Create contract instance
